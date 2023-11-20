@@ -4,7 +4,7 @@ function [UnpackedData, UnpackedDataRaw] = decodeOpenBCIData(ObjSerial, BufferSi
 %to obtain 'UnpackedData' and 'UnpackedDataRaw'.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Constant %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 PackageLen = 33;
-nCh = 8;
+nCh = 8; %channel
 scale_fac_uVolts_per_count = 0.022351744455307063;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -14,7 +14,8 @@ recdta = fread(ObjSerial, BufferSize, 'uchar');   % Receive serial data from Ope
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Unpack Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 A0 = find(recdta==hex2dec('A0'));
-iPackage = 0;
+%iPackage = 0;
+iPackage = 1;
 for iSt = 1:numel(A0)
     if (A0(iSt)+PackageLen-1<=numel(recdta))&&(recdta(A0(iSt)+PackageLen-1)==192)    % 'C0'=192
         iPackage = iPackage+1;

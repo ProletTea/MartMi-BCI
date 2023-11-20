@@ -34,7 +34,8 @@ YTest = categorical(DataTestLabel);
 % FinalTestLabel = categorical(DataTestLabel);
 
 
-numClasses = 2;
+%numClasses = 2;
+numClasses = 3;
 
 layers = [ ...
     imageInputLayer([size(XTrain,1) size(XTrain,2) size(XTrain,3)])

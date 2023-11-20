@@ -332,7 +332,7 @@ function ButtonOpenSerialPort_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 clc
-instrreset
+%instrreset
 global ObjSerial;
 global SerialPortNum;
 global BaudRate;
@@ -576,10 +576,18 @@ if MotorImagery.RecordFlag
         MotorImagery.State = 'Stopping';
         %%%%% Show Cue %%%%%
         if logical(get(handles.CheckBoxEnablePredict, 'Value'))
+            %test1 = MotorImagery.Sample.Stage2;
+            %test2 = MotorImagery.RecordData;
             ImageData(1,:,:) = MotorImagery.RecordData(:, MotorImagery.Sample.Stage2+1:MotorImagery.Sample.Stage2+1000);
+
+            %To test the prediction directly through trained data.
+            %tmp = load("D:\SJTU_MS_1ST\BCI\SOFTX-D-23-00016-main\SOFTX-D-23-00016-main\Data\BasicMoveData\2.mat");
+            %ImageData(1,:,:) = tmp.MotorImagery.RecordData(:, MotorImagery.Sample.Stage2+1:MotorImagery.Sample.Stage2+1000);
+
             SelFlag = get(handles.CheckBoxEnableFeaSel, 'Value');
             PredictLabel = PredictSingleTrail(MotorImagery.ParaImagery, ImageData, SelFlag, MotorImagery.ParaImagery.CSP_Config);
             PredictLabel = double(PredictLabel);
+            PredictLabel
             image(handles.AxesImageBigCue, MotorImagery.ClassImage{PredictLabel});
             axis(handles.AxesImageBigCue, 'off');
             image(handles.AxesImageSmallCue, MotorImagery.ClassImage{PredictLabel});
@@ -603,7 +611,8 @@ if MotorImagery.RecordFlag
         %%%%% Show Cue %%%%%        
         DrawMapTrans = MotorImagery.RecordData./ZoomCoeff;
         interval = 10;
-        ch_offset = (interval:interval:interval*nCh)';
+        %ch_offset = (interval:interval:interval*nCh)';
+        ch_offset = (interval:interval:interval*8)';
         ch_offset = repmat(ch_offset, [1,size(DrawMapTrans,2)]);
         DrawMapTrans = DrawMapTrans+ch_offset;
         DrawMapTrans(DrawMapTrans>90) = 90;
@@ -679,7 +688,7 @@ end
 
 DrawMapTrans = DrawMap.Mat./ZoomCoeff;
 interval = 10;
-ch_offset = (interval:interval:interval*nCh)';
+ch_offset = (interval:interval:interval*8)';
 ch_offset = repmat(ch_offset, [1,size(DrawMapTrans,2)]);
 DrawMapTrans = DrawMapTrans+ch_offset;
 
@@ -730,7 +739,7 @@ ElectrodeMap.ThetaPowerVector = sum(fft_mold(:,4:7).^2,2)';
 ElectrodeMap.AlphaPowerVector = sum(fft_mold(:,8:13).^2,2)';
 ElectrodeMap.BetaPowerVector = sum(fft_mold(:,14:30).^2,2)';
 ElectrodeMap.AllPowerVector = sum(fft_mold(:,4:30).^2,2)';
-for iCh = 1:nCh
+for iCh = 1:8 %channel
     ElectrodeMap.ThetaMap(ElectrodeMap.y(iCh), ElectrodeMap.x(iCh)) = ElectrodeMap.ThetaPowerVector(iCh);
     ElectrodeMap.AlphaMap(ElectrodeMap.y(iCh), ElectrodeMap.x(iCh)) = ElectrodeMap.AlphaPowerVector(iCh);
     ElectrodeMap.BetaMap(ElectrodeMap.y(iCh), ElectrodeMap.x(iCh)) = ElectrodeMap.BetaPowerVector(iCh);

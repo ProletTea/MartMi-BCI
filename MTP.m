@@ -197,7 +197,8 @@ end
 
 % CSP_Config.Mode = 2;    % CSP模式，1：divCSP, 2：CSP
 CSP_Config.Wcsp = [];
-nClass = 2;     % 分类数目
+%nClass = 2;     % 分类数目
+nClass = 3;
 
 if ~isempty(TrainSetting.ImageData)
     ParaImagery = GetParaImagery(TrainSetting.ImageData, TrainSetting.ImageLabel, SelFlag, ParallelFlag, CSP_Config, nClass);
@@ -234,7 +235,8 @@ end
 % CSP_Config.Mode = 2;    % CSP模式，1：divCSP, 2：CSP
 CSP_Config.Wcsp = [];
 nFold = str2double(get(handles.EditNumFold, 'String'));      % 交叉验证折数
-nClass = 2;     % 分类数目
+%nClass = 2;     % 分类数目 -> Why 2?
+nClass = 3;
 
 accMat = [];
 indices = crossvalind('Kfold',numel(find(double(TrainSetting.ImageLabel)==1)),nFold);

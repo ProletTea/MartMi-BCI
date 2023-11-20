@@ -2,8 +2,11 @@ function [LinkVarMatTrain, LinkVarMatTest, Wcsp] = FilterBankFeatureExt(DataTrai
 if isempty(CSP_Config.Wcsp)
     %% 将各个类别分出来
 
-    nClass = 2;
+    %nClass = 2;
+    nClass = 3;
     for iClass = 1:nClass
+        %DataTrainTrue = DataTrainLabel == iClass;
+        %DataTrainClass{iClass} = DataTrain(DataTrainTrue, :, :);
         DataTrainClass{iClass} = DataTrain(DataTrainLabel == iClass, :, :);
     %     DataTrainLabelClass{iClass} = DataTrainLabel(DataTrainLabel == iClass);
     end
