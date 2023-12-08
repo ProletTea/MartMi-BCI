@@ -13,15 +13,16 @@ recdta = fread(ObjSerial, BufferSize, 'uchar');   % Receive serial data from Ope
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Unpack Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-A0 = find(recdta==hex2dec('A0'));
-%iPackage = 0;
-iPackage = 1;
+A0 = find(recdta==hex2dec('A0')); %Find the front of the package (signed with 160).
+iPackage = 0;
+%iPackage = 1;
 for iSt = 1:numel(A0)
     if (A0(iSt)+PackageLen-1<=numel(recdta))&&(recdta(A0(iSt)+PackageLen-1)==192)    % 'C0'=192
         iPackage = iPackage+1;
         PackArr(iPackage,:) = recdta(A0(iSt):A0(iSt)+PackageLen-1);
     end
 end
+%PackArr = PackArr(:,3:26); &Original
 PackArr = PackArr(:,3:26);
 UnpackedData = zeros(nCh,size(PackArr,1));
 for iCh = 1:nCh
