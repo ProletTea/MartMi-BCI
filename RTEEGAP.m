@@ -77,9 +77,11 @@ set(handles.EditImageFilePath, 'String', [CurrentPath, '\Data\MotorImageryData\'
 set(handles.EditImageConfigureFilePath, 'String', [CurrentPath, '\Data\Configure\Configure.mat']);
 
 MotorImagery.RecordFlag = 0;
+MotorImagery.RecordFlagCom = 0;
 MotorImagery.RecordData = [];
 MotorImagery.RecordRawData = [];
 MotorImagery.EpochCnt = 0;
+MotorImagery.EpochCntCom = 0;
 MotorImagery.PrepareTime = str2double(get(handles.EditPrepareTime, 'String'));              
 MotorImagery.ImageLastTime = str2double(get(handles.EditImageLastTime, 'String'));          
 MotorImagery.CueTime = str2double(get(handles.EditCueTime, 'String'));                      
@@ -497,12 +499,15 @@ end
 
 %******************** Section Start *************************************
 
-[UnpackedData, UnpackedDataRaw] = decodeOpenBCIData(ObjSerial, BufferSize);
+%[UnpackedData, UnpackedDataRaw] = decodeOpenBCIData(ObjSerial, BufferSize);
+[UnpackedData, UnpackedDataRaw] = decodeOpenBCIData_16ch(ObjSerial, BufferSize);
+%UnpackedData = UnpackedData(1:8, :);
 
 %******************** Section End ***************************************
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Filtering %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[UnpackedData, Filter.HistoryOutput] = filter(Filter.Coeff_b, Filter.Coeff_a, UnpackedData, Filter.HistoryOutput, 2);
+ [UnpackedData, Filter.HistoryOutput] = filter(Filter.Coeff_b, Filter.Coeff_a, UnpackedData, Filter.HistoryOutput, 2);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Record Data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -574,17 +579,24 @@ if MotorImagery.RecordFlag
         MotorImagery.StageFlag = 3;
         MotorImagery.Sample.Stage3 = MotorImagery.Sample.Cnt;
         MotorImagery.State = 'Stopping';
-        %%%%% Show Cue %%%%%
+        %%%%% Show Cue %%%%%Motor
         if logical(get(handles.CheckBoxEnablePredict, 'Value'))
             %test1 = MotorImagery.Sample.Stage2;
             %test2 = MotorImagery.RecordData;
-            ImageData(1,:,:) = MotorImagery.RecordData(:, MotorImagery.Sample.Stage2+1:MotorImagery.Sample.Stage2+1000);
+            MotorImagery.Sample.Stage2
+            size(MotorImagery.RecordData, 2)
+            predictCnt = size(MotorImagery.RecordData, 2) - 1000;
+            %ImageData(1,:,:) = MotorImagery.RecordData(:, MotorImagery.Sample.Stage2+1:MotorImagery.Sample.Stage2+1000);
+            ImageData(1,:,:) = MotorImagery.RecordData(:, predictCnt+1:predictCnt+1000);
 
             %To test the prediction directly through trained data.
             %tmp = load("D:\SJTU_MS_1ST\BCI\SOFTX-D-23-00016-main\SOFTX-D-23-00016-main\Data\BasicMoveData\2.mat");
             %ImageData(1,:,:) = tmp.MotorImagery.RecordData(:, MotorImagery.Sample.Stage2+1:MotorImagery.Sample.Stage2+1000);
 
             SelFlag = get(handles.CheckBoxEnableFeaSel, 'Value');
+            %PredictLabel = PredictSingleTrail(MotorImagery.ParaImagery, ImageData, SelFlag, MotorImagery.ParaImagery.CSP_Config);
+            %testA = load('D:\SJTU_MS_1ST\BCI\SOFTX-D-23-00016-main\SOFTX-D-23-00016-main\Data\8chData_v1\57.mat');
+            %ImageData(1,:,:) = testA.MotorImagery.RecordData(:, MotorImagery.Sample.Stage2+1:MotorImagery.Sample.Stage2+1000);
             PredictLabel = PredictSingleTrail(MotorImagery.ParaImagery, ImageData, SelFlag, MotorImagery.ParaImagery.CSP_Config);
             PredictLabel = double(PredictLabel);
             PredictLabel
@@ -612,9 +624,9 @@ if MotorImagery.RecordFlag
         DrawMapTrans = MotorImagery.RecordData./ZoomCoeff;
         interval = 10;
         %ch_offset = (interval:interval:interval*nCh)';
-        ch_offset = (interval:interval:interval*8)';
+        ch_offset = (interval:interval:interval*16)';%channel
         ch_offset = repmat(ch_offset, [1,size(DrawMapTrans,2)]);
-        DrawMapTrans = DrawMapTrans+ch_offset;
+        DrawMapTrans = DrawMapTrans+ch_offset;%channel
         DrawMapTrans(DrawMapTrans>90) = 90;
         DrawMapTrans(DrawMapTrans<0) = 0;
         
@@ -647,6 +659,23 @@ if MotorImagery.RecordFlag
         
         %%%%%%%%%%%%%%%%%%%%
     end
+
+    %Communication
+    if (MotorImagery.EpochCntCom >= 2/(IntervalTime.DispMs/1000))
+        predictCnt = size(MotorImagery.RecordData, 2) - 200; %1000?200?Not sure
+        ImageData(1,:,: ) = MotorImagery.RecordData(:, predictCnt+1:predictCnt+200);
+
+        %SelFlag = get(handles.CheckBoxEnableFeaSel, 'Value');
+        SelFlag = true;
+        
+        PredictLabel = PredictSingleTrail(MotorImagery.ParaImagery, ImageData, SelFlag, MotorImagery.ParaImagery.CSP_Config);
+        PredictLabel = double(PredictLabel);
+
+        %PredictLabel
+
+        SendSignal(1, PredictLabel);
+
+    end
     
     if MotorImagery.StageFlag > 3
         MotorImagery.EpochCnt = 0;
@@ -674,11 +703,11 @@ end
 DataLength = size(UnpackedData,2);
 if DataLength+DrawMap.CurLoc > DrawMap.Width
     dataPart = (DrawMap.Width-DrawMap.CurLoc)+1;
-    DrawMap.Mat(:, DrawMap.CurLoc:end) = UnpackedData(:, 1:dataPart);
-    DrawMap.Mat(:,1:(DataLength-dataPart)) = UnpackedData(:, dataPart+1:end);
+    DrawMap.Mat(:, DrawMap.CurLoc:end) = UnpackedData(1:8, 1:dataPart)*0.5;%channel
+    DrawMap.Mat(:,1:(DataLength-dataPart)) = UnpackedData(1:8, dataPart+1:end)*0.5;%channel
     DrawMap.CurLoc = (DataLength-dataPart)+1;
 else
-    DrawMap.Mat(:, DrawMap.CurLoc:DrawMap.CurLoc+DataLength-1) = UnpackedData;
+    DrawMap.Mat(:, DrawMap.CurLoc:DrawMap.CurLoc+DataLength-1) = UnpackedData(1:8, :)*0.5;%channel
     DrawMap.CurLoc = DrawMap.CurLoc + DataLength;
 end
 
@@ -715,7 +744,7 @@ if DataLength > FFTMap.Width
     FFTMap.Buffer = UnpackedData(:, end-FFTMap.Width+1:end);
 else
     FFTMap.Buffer(:, 1:(end-DataLength)) = FFTMap.Buffer(:, DataLength+1:end);
-    FFTMap.Buffer(:, (end-DataLength+1):end) = UnpackedData;
+    FFTMap.Buffer(:, (end-DataLength+1):end) = UnpackedData(1:8, :);%channel
 end
 
 FFTBufferDS = FFTMap.Buffer(:,1:FFTMap.DSR:end);   % Downsampled by 2 times
@@ -1260,6 +1289,13 @@ function ButtonStartExperiment_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global MotorImagery
+
+%Communication
+[SigType, OpType] = GetSignal();
+if (Sigtype == 1)
+    MotorImagery.RecordFlagCom = 1;
+    MotorImagery.EpochCntCom = 0;
+end
 
 % MotorImagery.RemainEpoch = MotorImagery.RemainEpoch - 1;
 if MotorImagery.RemainEpoch-1 < 0
