@@ -503,6 +503,17 @@ end
 [UnpackedData, UnpackedDataRaw] = decodeOpenBCIData_16ch(ObjSerial, BufferSize);
 %UnpackedData = UnpackedData(1:8, :);
 
+%fprintf('Decoded.');
+
+%Communication
+fprintf('Enter');
+[SigType, OpType] = GetSignal();
+Sigtype
+%if (Sigtype == SignalType.GAME_START)
+%    MotorImagery.RecordFlagCom = 1;
+%    MotorImagery.EpochCntCom = 0;
+%end
+
 %******************** Section End ***************************************
 
 
@@ -700,14 +711,18 @@ if DrawMap.CurLoc > DrawMap.Width
     DrawMap.CurLoc = 1; 
 end
 
+%fprintf('EEG stream');
+
+
+
 DataLength = size(UnpackedData,2);
 if DataLength+DrawMap.CurLoc > DrawMap.Width
     dataPart = (DrawMap.Width-DrawMap.CurLoc)+1;
-    DrawMap.Mat(:, DrawMap.CurLoc:end) = UnpackedData(1:8, 1:dataPart)*0.5;%channel
-    DrawMap.Mat(:,1:(DataLength-dataPart)) = UnpackedData(1:8, dataPart+1:end)*0.5;%channel
+    DrawMap.Mat(:, DrawMap.CurLoc:end) = UnpackedData(1:8, 1:dataPart)*0.1;%channel
+    DrawMap.Mat(:,1:(DataLength-dataPart)) = UnpackedData(1:8, dataPart+1:end)*0.1;%channel
     DrawMap.CurLoc = (DataLength-dataPart)+1;
 else
-    DrawMap.Mat(:, DrawMap.CurLoc:DrawMap.CurLoc+DataLength-1) = UnpackedData(1:8, :)*0.5;%channel
+    DrawMap.Mat(:, DrawMap.CurLoc:DrawMap.CurLoc+DataLength-1) = UnpackedData(1:8, :)*0.1;%channel
     DrawMap.CurLoc = DrawMap.CurLoc + DataLength;
 end
 
@@ -1291,8 +1306,10 @@ function ButtonStartExperiment_Callback(hObject, eventdata, handles)
 global MotorImagery
 
 %Communication
+print('Enter');
 [SigType, OpType] = GetSignal();
-if (Sigtype == 1)
+Sigtype
+if (Sigtype == SignalType.GAME_START)
     MotorImagery.RecordFlagCom = 1;
     MotorImagery.EpochCntCom = 0;
 end
