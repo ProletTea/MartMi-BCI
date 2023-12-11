@@ -378,6 +378,7 @@ catch
 %     set(handles.TextCurrentState, 'String', 'æ‰“å¼€ä¸²å£å¤±è´¥!');
 %     start(handles.TimerHandle_TryStartCom);
 end
+%ObjSerial.BytesAvailableFcn={@mycom, handles}; 
 
 guidata(hObject,handles);
 
@@ -506,9 +507,9 @@ end
 %fprintf('Decoded.');
 
 %Communication
-fprintf('Enter');
-[SigType, OpType] = GetSignal();
-Sigtype
+%fprintf('Enter');
+%[SigType, OpType] = GetSignal();
+%Sigtype
 %if (Sigtype == SignalType.GAME_START)
 %    MotorImagery.RecordFlagCom = 1;
 %    MotorImagery.EpochCntCom = 0;
@@ -672,21 +673,21 @@ if MotorImagery.RecordFlag
     end
 
     %Communication
-    if (MotorImagery.EpochCntCom >= 2/(IntervalTime.DispMs/1000))
-        predictCnt = size(MotorImagery.RecordData, 2) - 200; %1000?200?Not sure
-        ImageData(1,:,: ) = MotorImagery.RecordData(:, predictCnt+1:predictCnt+200);
+    %if (MotorImagery.EpochCntCom >= 2/(IntervalTime.DispMs/1000))
+    %    predictCnt = size(MotorImagery.RecordData, 2) - 200; %1000?200?Not sure
+    %    ImageData(1,:,: ) = MotorImagery.RecordData(:, predictCnt+1:predictCnt+200);
 
         %SelFlag = get(handles.CheckBoxEnableFeaSel, 'Value');
-        SelFlag = true;
+    %    SelFlag = true;
         
-        PredictLabel = PredictSingleTrail(MotorImagery.ParaImagery, ImageData, SelFlag, MotorImagery.ParaImagery.CSP_Config);
-        PredictLabel = double(PredictLabel);
+    %    PredictLabel = PredictSingleTrail(MotorImagery.ParaImagery, ImageData, SelFlag, MotorImagery.ParaImagery.CSP_Config);
+    %    PredictLabel = double(PredictLabel);
 
         %PredictLabel
 
-        SendSignal(1, PredictLabel);
+     %   SendSignal(1, PredictLabel);
 
-    end
+   % end
     
     if MotorImagery.StageFlag > 3
         MotorImagery.EpochCnt = 0;
@@ -759,11 +760,14 @@ if DataLength > FFTMap.Width
     FFTMap.Buffer = UnpackedData(:, end-FFTMap.Width+1:end);
 else
     FFTMap.Buffer(:, 1:(end-DataLength)) = FFTMap.Buffer(:, DataLength+1:end);
-    FFTMap.Buffer(:, (end-DataLength+1):end) = UnpackedData(1:8, :);%channel
+    FFTMap.Buffer(:, (end-DataLength+1):end) = UnpackedData(1:16, :);%channel
 end
 
 FFTBufferDS = FFTMap.Buffer(:,1:FFTMap.DSR:end);   % Downsampled by 2 times
 [x,fft_mold] = fftmold(FFTBufferDS,SampleRate/FFTMap.DSR,SampleRate/FFTMap.DSR);
+
+fft_mold
+
 plot(handles.AxesFFT, x(1:40), fft_mold(:,1:40));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -1306,13 +1310,13 @@ function ButtonStartExperiment_Callback(hObject, eventdata, handles)
 global MotorImagery
 
 %Communication
-print('Enter');
-[SigType, OpType] = GetSignal();
-Sigtype
-if (Sigtype == SignalType.GAME_START)
-    MotorImagery.RecordFlagCom = 1;
-    MotorImagery.EpochCntCom = 0;
-end
+%print('Enter');
+%[SigType, OpType] = GetSignal();
+%Sigtype
+%if (Sigtype == SignalType.GAME_START)
+%    MotorImagery.RecordFlagCom = 1;
+%    MotorImagery.EpochCntCom = 0;
+%end
 
 % MotorImagery.RemainEpoch = MotorImagery.RemainEpoch - 1;
 if MotorImagery.RemainEpoch-1 < 0
