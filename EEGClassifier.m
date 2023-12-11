@@ -1,25 +1,22 @@
 function ret = EEGClassifier()
-%addpath(".\IO\");
-
-while true
-    [SigType, ~] = GetSignal();
-    fptintf(Sigtype);
-    
-    if SigType == SignalType.GAME_START
-        initialize();
-    elseif SigType == SignalType.MOTION_REQUEST
-        OpType = work();
-        SendSignal(SignalType.MOTION_APPLY, OpType);
-    elseif SigType == SignalType.GAME_OVER
-        ret = 0;
-        break;
-    else % should never happen
-        ret = 1;
-        break;
+    warning('off');
+    while true
+        [SigType, ~] = GetSignal();
+        
+        if SigType == SignalType.GAME_START
+            initialize();
+            SendSignal(SignalType.GAME_START, Operand.NONE);
+        elseif SigType == SignalType.MOTION_REQUEST
+            OpType = work();
+            SendSignal(SignalType.MOTION_APPLY, OpType);
+        elseif SigType == SignalType.GAME_OVER
+            ret = 0;
+            break;
+        else % should never happen
+            ret = 1;
+            break;
+        end
     end
-
-end
-
 end
 
 function initialize()
@@ -59,17 +56,17 @@ function initialize()
     
     try
         fopen(ObjSerial);
-        fprintf("Serial open successed.\n");
+        % fprintf("Serial open successed.\n");
     catch
         %NumTryStartCom = NumTryStartCom+1;
-        fprintf("Serial open failed.\n");
+        % fprintf("Serial open failed.\n");
     end
 
     try
         fwrite(ObjSerial,'b','uchar'); 
-        fprintf("Serial data read successed.\n");
+        % fprintf("Serial data read successed.\n");
     catch
-        fprintf("Serial data read failed.\n");
+        % fprintf("Serial data read failed.\n");
     end
 
 
