@@ -2,8 +2,6 @@
 Build/*
 !Build/build.m
 
-resources/
-
 # Windows default autosave extension
 *.asv
 
